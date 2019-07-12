@@ -51,7 +51,7 @@ void setup() {
   pinMode(LED_BIT3, OUTPUT);
   pinMode(LED_BIT4, OUTPUT);
   pinMode(LED_CLK, OUTPUT);
-  digitalWrite(LED_CLK, LOW);
+  digitalWrite(LED_CLK, HIGH);
   pinMode(START_BUTTON, INPUT_PULLUP);
   pinMode(DASH_BUTTON, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(START_BUTTON), startStop, LOW);
@@ -76,9 +76,9 @@ void loop() {
   }
   if (buttonState) {
     n = n + 1;
-    digitalWrite(LED_CLK, HIGH);
-    delay(5);
     digitalWrite(LED_CLK, LOW);
+    delay(5);
+    digitalWrite(LED_CLK, HIGH);
   }
 }
 
