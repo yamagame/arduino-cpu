@@ -8,11 +8,10 @@
 #define INP_BIT2 16
 #define INP_BIT3 10
 //出力：プログラムコード
-#define LED_BIT0 5
-#define LED_BIT1 6
-#define LED_BIT2 7
-#define LED_BIT3 8
-#define LED_BIT4 9
+#define LED_BIT0 6
+#define LED_BIT1 7
+#define LED_BIT2 8
+#define LED_BIT3 9
 //再読み込みボタン
 #define LOAD_BUTTON 2
 #else
@@ -22,11 +21,10 @@
 #define INP_BIT2 11
 #define INP_BIT3 10
 //出力：プログラムコード
-#define LED_BIT0 5
-#define LED_BIT1 6
-#define LED_BIT2 7
-#define LED_BIT3 8
-#define LED_BIT4 9
+#define LED_BIT0 6
+#define LED_BIT1 7
+#define LED_BIT2 8
+#define LED_BIT3 9
 //再読み込みボタン
 #define LOAD_BUTTON 2
 #endif
@@ -96,7 +94,6 @@ void setup() {
   pinMode(LED_BIT1, OUTPUT);
   pinMode(LED_BIT2, OUTPUT);
   pinMode(LED_BIT3, OUTPUT);
-  pinMode(LED_BIT4, OUTPUT);
 
   pinMode(LOAD_BUTTON, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(LOAD_BUTTON), loadProgram, LOW);
@@ -120,5 +117,4 @@ void loop() {
   ledUpdate(val, 0x02, LED_BIT1);
   ledUpdate(val, 0x04, LED_BIT2);
   ledUpdate(val, 0x08, LED_BIT3);
-  ledUpdate(val, 0x10, LED_BIT4);
 }

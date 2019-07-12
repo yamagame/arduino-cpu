@@ -1,10 +1,9 @@
 #if defined(__AVR_ATmega32U4__)
 //入力：プログラムコード
-#define INP_BIT0 18
-#define INP_BIT1 15
-#define INP_BIT2 14
-#define INP_BIT3 16
-#define INP_BIT4 10
+#define INP_BIT0 15
+#define INP_BIT1 14
+#define INP_BIT2 16
+#define INP_BIT3 10
 //出力：レジスタ
 #define LED_BIT0 6
 #define LED_BIT1 7
@@ -20,11 +19,10 @@
 #define INP_CLK 2
 #else
 //入力：プログラムコード
-#define INP_BIT0 A0
-#define INP_BIT1 13
-#define INP_BIT2 12
-#define INP_BIT3 11
-#define INP_BIT4 10
+#define INP_BIT0 13
+#define INP_BIT1 12
+#define INP_BIT2 11
+#define INP_BIT3 10
 //出力：レジスタ
 #define LED_BIT0 6
 #define LED_BIT1 7
@@ -49,11 +47,20 @@ void execProg() {
   int b1 = !digitalRead(INP_BIT1);
   int b2 = !digitalRead(INP_BIT2);
   int b3 = !digitalRead(INP_BIT3);
-  int b4 = !digitalRead(INP_BIT4);
-  unsigned char code = (b4 << 2) | (b3 << 1) | b2;
+  unsigned char code = (b3 << 1) | b2;
   unsigned char func = (b1 << 1) | b0;
   switch (code) {
-    case 0:   //NOP
+    case 0:
+      switch (func) {
+        case 0:  //NOP
+          break;
+        case 1:
+          break;
+        case 2:
+          break;
+        case 3:
+          break;
+      }
       break;
     case 1:   //MOV
       switch (func) {
@@ -87,18 +94,6 @@ void execProg() {
           break;
       }
       break;
-    case 4:   //OUT
-      switch (func) {
-        case 0:  //ACT BEEP
-          break;
-        case 1:
-          break;
-        case 2:
-          break;
-        case 3:
-          break;
-      }
-      break;
   }
 }
 
@@ -109,7 +104,6 @@ void setup() {
   pinMode(INP_BIT1, INPUT);
   pinMode(INP_BIT2, INPUT);
   pinMode(INP_BIT3, INPUT);
-  pinMode(INP_BIT4, INPUT);
 
   pinMode(LED_BIT0, OUTPUT);
   pinMode(LED_BIT1, OUTPUT);
