@@ -1,10 +1,34 @@
 //pro mini用
-//10-13: ４ビットカウンタ出力
-//    2: スタート/ストップボタン
-//    8: 高速モードボタン
-//    7: クロック出力
+//10,11,12,13: ４ビットカウンタ出力
+//          2: スタート/ストップボタン
+//          8: 高速モードボタン
+//          7: クロック出力
+
+//pro micro用
+//15,14,16,10: ４ビットカウンタ出力
+//          2: スタート/ストップボタン
+//          8: 高速モードボタン
+//          7: クロック出力
 
 #include <limits.h>
+
+#if defined(__AVR_ATmega32U4__)
+#define LED_BIT1 15
+#define LED_BIT2 14
+#define LED_BIT3 16
+#define LED_BIT4 10
+#define LED_CLK 7
+#define START_BUTTON 2
+#define DASH_BUTTON 8
+#else
+#define LED_BIT1 13
+#define LED_BIT2 12
+#define LED_BIT3 11
+#define LED_BIT4 10
+#define LED_CLK 7
+#define START_BUTTON 2
+#define DASH_BUTTON 8
+#endif
 
 unsigned char n;
 int buttonState = LOW; 
@@ -22,29 +46,29 @@ void ledUpdate(int leds, int no, int gpio) {
 void setup() {
   Serial.begin(115200);
   n = 0;
-  pinMode(13, OUTPUT);
-  pinMode(12, OUTPUT);
-  pinMode(11, OUTPUT);
-  pinMode(10, OUTPUT);
-  pinMode(7, OUTPUT);
-  digitalWrite(7, LOW);
-  pinMode(2, INPUT_PULLUP);
-  pinMode(8, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(2), startStop, LOW);
+  pinMode(LED_BIT1, OUTPUT);
+  pinMode(LED_BIT2, OUTPUT);
+  pinMode(LED_BIT3, OUTPUT);
+  pinMode(LED_BIT4, OUTPUT);
+  pinMode(LED_CLK, OUTPUT);
+  digitalWrite(LED_CLK, LOW);
+  pinMode(START_BUTTON, INPUT_PULLUP);
+  pinMode(DASH_BUTTON, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(START_BUTTON), startStop, LOW);
   Serial.println("initialization done.");
 }
 
 void loop() {
-  ledUpdate(n, 0x01, 13);
-  ledUpdate(n, 0x02, 12);
-  ledUpdate(n, 0x04, 11);
-  ledUpdate(n, 0x08, 10);
+  ledUpdate(n, 0x01, LED_BIT1);
+  ledUpdate(n, 0x02, LED_BIT2);
+  ledUpdate(n, 0x04, LED_BIT3);
+  ledUpdate(n, 0x08, LED_BIT4);
   for (int i=0;i<10;i++) {
     if (!buttonState) {
       delay(100);
     } else {
-      if (!digitalRead(8)) {
-        delay(10);
+      if (!digitalRead(DASH_BUTTON)) {
+        delay(5);
       } else {
         delay(90);
       }
@@ -52,9 +76,9 @@ void loop() {
   }
   if (buttonState) {
     n = n + 1;
-    digitalWrite(7, HIGH);
-    delay(10);
-    digitalWrite(7, LOW);
+    digitalWrite(LED_CLK, HIGH);
+    delay(5);
+    digitalWrite(LED_CLK, LOW);
   }
 }
 
