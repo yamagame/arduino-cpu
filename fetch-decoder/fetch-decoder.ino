@@ -1,33 +1,18 @@
 #include <SPI.h>
 #include <SD.h>
 
-#if defined(__AVR_ATmega32U4__)
 //入力：プログラムカウンタ
-#define INP_BIT0 15
-#define INP_BIT1 14
-#define INP_BIT2 16
-#define INP_BIT3 10
+#define INP_BIT0 1
+#define INP_BIT1 0
+#define INP_BIT2 3
+#define INP_BIT3 4
 //出力：プログラムコード
 #define LED_BIT0 6
 #define LED_BIT1 7
 #define LED_BIT2 8
 #define LED_BIT3 9
-//再読み込みボタン
-#define LOAD_BUTTON 2
-#else
-//入力：プログラムカウンタ
-#define INP_BIT0 13
-#define INP_BIT1 12
-#define INP_BIT2 11
-#define INP_BIT3 10
-//出力：プログラムコード
-#define LED_BIT0 6
-#define LED_BIT1 7
-#define LED_BIT2 8
-#define LED_BIT3 9
-//再読み込みボタン
-#define LOAD_BUTTON 2
-#endif
+//SD:CS
+#define SDCS 10
 
 unsigned char pc = 0;
 unsigned char programdata[16];
@@ -56,7 +41,7 @@ void loadProgram() {
           }
           p ++;
           b = 0;
-          Serial.println("");
+          //Serial.println("");
         }
         skip = 1;
       }
@@ -65,38 +50,36 @@ void loadProgram() {
         if (ch != '0') {
           b |= 1;
         }
-        Serial.write(ch);
+        //Serial.write(ch);
       }
     }
     fp.close();
   } else {
-    Serial.println("error opening program.txt");
+    //Serial.println("error opening program.txt");
   }
 }
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Initializing SD card...");
+  //Serial.begin(115200);
+  //while (!Serial) ;
+  //Serial.println("Initializing SD card...");
 
-  if (!SD.begin(4)) {
-    Serial.println("initialization failed!");
+  if (!SD.begin(SDCS)) {
+    //Serial.println("initialization failed!");
     while (1);
   }
-  Serial.println("initialization done.");
+  //Serial.println("initialization done.");
   
   // put your setup code here, to run once:
-  pinMode(INP_BIT0, INPUT_PULLUP);
-  pinMode(INP_BIT1, INPUT_PULLUP);
-  pinMode(INP_BIT2, INPUT_PULLUP);
-  pinMode(INP_BIT3, INPUT_PULLUP);
+  pinMode(INP_BIT0, INPUT);
+  pinMode(INP_BIT1, INPUT);
+  pinMode(INP_BIT2, INPUT);
+  pinMode(INP_BIT3, INPUT);
 
   pinMode(LED_BIT0, OUTPUT);
   pinMode(LED_BIT1, OUTPUT);
   pinMode(LED_BIT2, OUTPUT);
   pinMode(LED_BIT3, OUTPUT);
-
-  pinMode(LOAD_BUTTON, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(LOAD_BUTTON), loadProgram, LOW);
 
   loadProgram();
 }
@@ -111,7 +94,7 @@ void ledUpdate(int leds, int no, int gpio) {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  pc = ((!digitalRead(INP_BIT3)) << 3) | ((!digitalRead(INP_BIT2)) << 2) | ((!digitalRead(INP_BIT1)) << 1) | (!digitalRead(INP_BIT0));
+  pc = ((digitalRead(INP_BIT3)) << 3) | ((digitalRead(INP_BIT2)) << 2) | ((digitalRead(INP_BIT1)) << 1) | (digitalRead(INP_BIT0));
   unsigned char val = programdata[pc & 0x0F];
   ledUpdate(val, 0x01, LED_BIT0);
   ledUpdate(val, 0x02, LED_BIT1);

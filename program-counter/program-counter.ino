@@ -17,7 +17,7 @@
 #define LED_BIT2 14
 #define LED_BIT3 16
 #define LED_BIT4 10
-#define LED_CLK 7
+#define EXEC_CLK 7
 #define START_BUTTON 2
 #define DASH_BUTTON 8
 #else
@@ -25,7 +25,7 @@
 #define LED_BIT2 12
 #define LED_BIT3 11
 #define LED_BIT4 10
-#define LED_CLK 7
+#define EXEC_CLK 7
 #define START_BUTTON 2
 #define DASH_BUTTON 8
 #endif
@@ -33,7 +33,6 @@
 unsigned char n;
 int buttonState = LOW; 
 unsigned long interruptTime = 0;
-
 
 void ledUpdate(int leds, int no, int gpio) {
   if (leds & no) {
@@ -50,8 +49,8 @@ void setup() {
   pinMode(LED_BIT2, OUTPUT);
   pinMode(LED_BIT3, OUTPUT);
   pinMode(LED_BIT4, OUTPUT);
-  pinMode(LED_CLK, OUTPUT);
-  digitalWrite(LED_CLK, HIGH);
+  pinMode(EXEC_CLK, OUTPUT);
+  digitalWrite(EXEC_CLK, HIGH);
   pinMode(START_BUTTON, INPUT_PULLUP);
   pinMode(DASH_BUTTON, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(START_BUTTON), startStop, LOW);
@@ -68,7 +67,7 @@ void loop() {
       delay(100);
     } else {
       if (!digitalRead(DASH_BUTTON)) {
-        delay(5);
+        delay(10);
       } else {
         delay(90);
       }
@@ -76,9 +75,9 @@ void loop() {
   }
   if (buttonState) {
     n = n + 1;
-    digitalWrite(LED_CLK, LOW);
-    delay(5);
-    digitalWrite(LED_CLK, HIGH);
+    digitalWrite(EXEC_CLK, LOW);
+    delay(10);
+    digitalWrite(EXEC_CLK, HIGH);
   }
 }
 

@@ -10,32 +10,14 @@
 #define LED_BIT2 8
 #define LED_BIT3 9
 //出力：Aレジスタ
-#define LED_AREG 4
+#define LED_AREG 3
 //出力：Bレジスタ
-#define LED_BREG 5
+#define LED_BREG 4
 //出力：フラッグ
-#define LED_FLAG 3
+#define LED_FLAG 5
 //入力：クロック
 #define INP_CLK 2
 #else
-//入力：プログラムコード
-#define INP_BIT0 13
-#define INP_BIT1 12
-#define INP_BIT2 11
-#define INP_BIT3 10
-//出力：レジスタ
-#define LED_BIT0 6
-#define LED_BIT1 7
-#define LED_BIT2 8
-#define LED_BIT3 9
-//出力：Aレジスタ
-#define LED_AREG 4
-//出力：Bレジスタ
-#define LED_BREG 5
-//出力：フラッグ
-#define LED_FLAG 3
-//入力：クロック
-#define INP_CLK 2
 #endif
 
 unsigned char AReg = 0;
@@ -43,12 +25,16 @@ unsigned char BReg = 0;
 unsigned char FReg = 0;
 
 void execProg() {
-  int b0 = !digitalRead(INP_BIT0);
-  int b1 = !digitalRead(INP_BIT1);
-  int b2 = !digitalRead(INP_BIT2);
-  int b3 = !digitalRead(INP_BIT3);
+  if (digitalRead(INP_CLK)) return;
+  int b0 = digitalRead(INP_BIT0);
+  int b1 = digitalRead(INP_BIT1);
+  int b2 = digitalRead(INP_BIT2);
+  int b3 = digitalRead(INP_BIT3);
   unsigned char code = (b3 << 1) | b2;
   unsigned char func = (b1 << 1) | b0;
+//  Serial.print(code, DEC);
+//  Serial.print(",");
+//  Serial.println(func, DEC);
   switch (code) {
     case 0:
       switch (func) {
@@ -98,7 +84,9 @@ void execProg() {
 }
 
 void setup() {
-  Serial.begin(115200);
+//  Serial.begin(115200);
+//  while (!Serial) ;
+//  Serial.println("Initializing...");
 
   pinMode(INP_BIT0, INPUT);
   pinMode(INP_BIT1, INPUT);
@@ -115,8 +103,10 @@ void setup() {
 
   pinMode(LED_FLAG, OUTPUT);
 
-  pinMode(INP_CLK, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(INP_CLK), execProg, LOW);
+  pinMode(INP_CLK, INPUT);
+  attachInterrupt(digitalPinToInterrupt(INP_CLK), execProg, CHANGE);
+
+//  Serial.println("initialization done.");
 }
 
 void ledUpdate(int leds, int no, int gpio) {
@@ -128,19 +118,21 @@ void ledUpdate(int leds, int no, int gpio) {
 }
 
 void loop() {
+  digitalWrite(LED_AREG, LOW);
+  digitalWrite(LED_BREG, HIGH);
   ledUpdate(AReg, 0x01, LED_BIT0);
   ledUpdate(AReg, 0x02, LED_BIT1);
   ledUpdate(AReg, 0x04, LED_BIT2);
   ledUpdate(AReg, 0x08, LED_BIT3);
-  digitalWrite(LED_AREG, LOW);
-  digitalWrite(LED_BREG, HIGH);
+  delay(5);
 
+  digitalWrite(LED_AREG, HIGH);
+  digitalWrite(LED_BREG, LOW);
   ledUpdate(BReg, 0x01, LED_BIT0);
   ledUpdate(BReg, 0x02, LED_BIT1);
   ledUpdate(BReg, 0x04, LED_BIT2);
   ledUpdate(BReg, 0x08, LED_BIT3);
-  digitalWrite(LED_AREG, HIGH);
-  digitalWrite(LED_BREG, LOW);
+  delay(5);
 
   ledUpdate(FReg, 0x01, LED_FLAG);
 }
