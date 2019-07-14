@@ -14,11 +14,16 @@
 //出力：Bレジスタ
 #define LED_BREG 4
 //出力：フラッグ
-#define LED_FLAG 5
+#define LED_CFLAG 19
+#define LED_JFLAG 18
 //入力：クロック
 #define INP_CLK 2
 #else
 #endif
+
+#define C_FLAG 0x01
+#define J_FLAG 0x02
+#define S_FLAG 0x04
 
 unsigned char AReg = 0;
 unsigned char BReg = 0;
@@ -35,16 +40,34 @@ void execProg() {
 //  Serial.print(code, DEC);
 //  Serial.print(",");
 //  Serial.println(func, DEC);
+  if (FReg & S_FLAG) {
+    if (FReg & J_FLAG) {
+      digitalWrite(LED_JFLAG, LOW);
+    } else {
+      digitalWrite(LED_JFLAG, HIGH);
+    }
+    FReg &= ~(S_FLAG | J_FLAG);
+    return;
+  }
+  digitalWrite(LED_JFLAG, HIGH);
   switch (code) {
     case 0:
       switch (func) {
         case 0:  //NOP
           break;
-        case 1:
+        case 1:  //JUMP
+          FReg |= (S_FLAG | J_FLAG);
           break;
-        case 2:
+        case 2:  //JNC
+          FReg |= S_FLAG;
+          if (!(FReg & C_FLAG)) {
+            FReg |= J_FLAG;
+          } else {
+            FReg &= ~J_FLAG;
+          }
           break;
-        case 3:
+        case 3:  //RND B
+          BReg = random(0, 10);
           break;
       }
       break;
@@ -68,15 +91,39 @@ void execProg() {
       switch (func) {
         case 0:  //ADD A,1
           AReg ++;
+          if (AReg > 0x0f) {
+            FReg |= C_FLAG;
+          } else {
+            FReg &= ~(C_FLAG);
+          }
+          AReg &= 0x0f;
           break;
         case 1:  //ADD A,2
           AReg += 2;
+          if (AReg > 0x0f) {
+            FReg |= C_FLAG;
+          } else {
+            FReg &= ~(C_FLAG);
+          }
+          AReg &= 0x0f;
           break;
         case 2:  //ADD A,A
           AReg += AReg;
+          if (AReg > 0x0f) {
+            FReg |= C_FLAG;
+          } else {
+            FReg &= ~(C_FLAG);
+          }
+          AReg &= 0x0f;
           break;
         case 3:  //ADD A,B
           AReg += BReg;
+          if (AReg > 0x0f) {
+            FReg |= C_FLAG;
+          } else {
+            FReg &= ~(C_FLAG);
+          }
+          AReg &= 0x0f;
           break;
       }
       break;
@@ -101,7 +148,9 @@ void setup() {
   pinMode(LED_AREG, OUTPUT);
   pinMode(LED_BREG, OUTPUT);
 
-  pinMode(LED_FLAG, OUTPUT);
+  pinMode(LED_CFLAG, OUTPUT);
+  pinMode(LED_JFLAG, OUTPUT);
+  digitalWrite(LED_JFLAG, HIGH);
 
   pinMode(INP_CLK, INPUT);
   attachInterrupt(digitalPinToInterrupt(INP_CLK), execProg, CHANGE);
@@ -134,5 +183,5 @@ void loop() {
   ledUpdate(BReg, 0x08, LED_BIT3);
   delay(5);
 
-  ledUpdate(FReg, 0x01, LED_FLAG);
+  ledUpdate(FReg, C_FLAG, LED_CFLAG);
 }

@@ -13,26 +13,37 @@
 #include <limits.h>
 
 #if defined(__AVR_ATmega32U4__)
-#define LED_BIT1 15
-#define LED_BIT2 14
-#define LED_BIT3 16
-#define LED_BIT4 10
+#define LED_BIT0 15
+#define LED_BIT1 14
+#define LED_BIT2 16
+#define LED_BIT3 10
+#define INP_BIT0 21
+#define INP_BIT1 20
+#define INP_BIT2 19
+#define INP_BIT3 18
 #define EXEC_CLK 7
 #define START_BUTTON 2
-#define DASH_BUTTON 8
+#define JUMP_BUTTON 3
+#define FAST_MODE 9
 #else
-#define LED_BIT1 13
-#define LED_BIT2 12
-#define LED_BIT3 11
-#define LED_BIT4 10
+#define LED_BIT0 13
+#define LED_BIT1 12
+#define LED_BIT2 11
+#define LED_BIT3 10
+#define INP_BIT0 17
+#define INP_BIT1 16
+#define INP_BIT2 15
+#define INP_BIT3 14
 #define EXEC_CLK 7
 #define START_BUTTON 2
-#define DASH_BUTTON 8
+#define JUMP_BUTTON 3
+#define FAST_MODE 9
 #endif
 
-unsigned char n;
-int buttonState = LOW; 
-unsigned long interruptTime = 0;
+volatile unsigned char counter = 0;
+volatile unsigned long interruptTime = 0;
+volatile int delayTime = 1000;
+volatile int clockState = LOW; 
 
 void ledUpdate(int leds, int no, int gpio) {
   if (leds & no) {
@@ -44,49 +55,79 @@ void ledUpdate(int leds, int no, int gpio) {
 
 void setup() {
   Serial.begin(115200);
-  n = 0;
+  pinMode(LED_BIT0, OUTPUT);
   pinMode(LED_BIT1, OUTPUT);
   pinMode(LED_BIT2, OUTPUT);
   pinMode(LED_BIT3, OUTPUT);
-  pinMode(LED_BIT4, OUTPUT);
+  pinMode(INP_BIT0, INPUT);
+  pinMode(INP_BIT1, INPUT);
+  pinMode(INP_BIT2, INPUT);
+  pinMode(INP_BIT3, INPUT);
+  pinMode(FAST_MODE, INPUT);
   pinMode(EXEC_CLK, OUTPUT);
   digitalWrite(EXEC_CLK, HIGH);
   pinMode(START_BUTTON, INPUT_PULLUP);
-  pinMode(DASH_BUTTON, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(START_BUTTON), startStop, LOW);
+  attachInterrupt(digitalPinToInterrupt(START_BUTTON), startButton, CHANGE);
+  pinMode(JUMP_BUTTON, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(JUMP_BUTTON), jumpButton, CHANGE);
   Serial.println("initialization done.");
 }
 
 void loop() {
-  ledUpdate(n, 0x01, LED_BIT1);
-  ledUpdate(n, 0x02, LED_BIT2);
-  ledUpdate(n, 0x04, LED_BIT3);
-  ledUpdate(n, 0x08, LED_BIT4);
-  for (int i=0;i<10;i++) {
-    if (!buttonState) {
-      delay(100);
-    } else {
-      if (!digitalRead(DASH_BUTTON)) {
-        delay(10);
-      } else {
-        delay(90);
-      }
-    }
-  }
-  if (buttonState) {
-    n = n + 1;
+  ledUpdate(counter, 0x01, LED_BIT0);
+  ledUpdate(counter, 0x02, LED_BIT1);
+  ledUpdate(counter, 0x04, LED_BIT2);
+  ledUpdate(counter, 0x08, LED_BIT3);
+  delay(delayTime);
+  if (clockState) {
+    counter ++;
     digitalWrite(EXEC_CLK, LOW);
-    delay(10);
+    delay(delayTime/10);
     digitalWrite(EXEC_CLK, HIGH);
+    if (counter >= 16) {
+      counter = 15;
+      clockState = LOW;
+    }
   }
 }
 
-void startStop() {
+unsigned char readInput() {
+  return ((digitalRead(INP_BIT3)) << 3) | ((digitalRead(INP_BIT2)) << 2) | ((digitalRead(INP_BIT1)) << 1) | (digitalRead(INP_BIT0));
+}
+
+void startButton() {
+  if (!digitalRead(START_BUTTON)) {
+    noInterrupts();
+    if (buttonCommon()) {
+    }
+    interrupts();
+  }
+}
+
+void jumpButton() {
+  if (!digitalRead(JUMP_BUTTON)) {
+    noInterrupts();
+    if (buttonCommon()) {
+      counter = readInput();
+    }
+    interrupts();
+  }
+}
+
+boolean buttonCommon() {
   unsigned long time = millis();
   unsigned char interval = 100;
   if ((time < time-interval && ULONG_MAX-(time-interval) + time > interval) || time-interval > interruptTime) {
+    if (!digitalRead(FAST_MODE)) {
+      delayTime = 1000;
+    } else {
+      delayTime = 50;
+    }
     interruptTime = time;
-    buttonState = !buttonState;
-    Serial.println(time, DEC);
+    clockState = HIGH;
+    counter = 0;
+    Serial.println(digitalRead(FAST_MODE), DEC);
+    return true;
   }
+  return false;
 }
