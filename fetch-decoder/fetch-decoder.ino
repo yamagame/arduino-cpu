@@ -60,16 +60,10 @@ void loadProgram() {
 }
 
 void setup() {
-  //Serial.begin(115200);
-  //while (!Serial) ;
-  //Serial.println("Initializing SD card...");
+//  Serial.begin(115200);
+//  while (!Serial) ;
+//  Serial.println("Initializing SD card...");
 
-  if (!SD.begin(SDCS)) {
-    //Serial.println("initialization failed!");
-    while (1);
-  }
-  //Serial.println("initialization done.");
-  
   // put your setup code here, to run once:
   pinMode(INP_BIT0, INPUT);
   pinMode(INP_BIT1, INPUT);
@@ -81,7 +75,22 @@ void setup() {
   pinMode(LED_BIT2, OUTPUT);
   pinMode(LED_BIT3, OUTPUT);
 
+  pinMode(SDCS, OUTPUT);
+  digitalWrite(SDCS, HIGH);
+
+  delay(1000);
+  while (true) {
+    if (SD.begin(SDCS)) {
+      break;
+    }
+    digitalWrite(LED_BIT0, HIGH);
+    delay(3000);
+    digitalWrite(LED_BIT0, LOW);
+  }
+
   loadProgram();
+
+//  Serial.println("initialization done.");
 }
 
 void ledUpdate(int leds, int no, int gpio) {
