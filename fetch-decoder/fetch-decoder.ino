@@ -2,10 +2,10 @@
 #include <SD.h>
 
 //入力：プログラムカウンタ
-#define INP_BIT0 1
-#define INP_BIT1 0
-#define INP_BIT2 3
-#define INP_BIT3 4
+#define INP_BIT0 21
+#define INP_BIT1 20
+#define INP_BIT2 19
+#define INP_BIT3 18
 //出力：プログラムコード
 #define LED_BIT0 6
 #define LED_BIT1 7
