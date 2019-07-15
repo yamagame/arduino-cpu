@@ -27,21 +27,20 @@
 <body>
 <div style="float: left; width:180px; margin-right: 5px;">
 <p>ニーモニック</p>
-<div style="border: 1px solid gray;">
+<div style="border: 1px solid gray; height: 480px; font-size:1.2em;">
 <ul>
-  <li>NOP</li>
-  <li>JMP XXXX</li>
-  <li>JNC XXXX</li>
-  <li>RND B</li>
-  <li>MOV A,0</li>
-  <li>MOV B,0</li>
-  <li>MOV A,B</li>
-  <li>MOV A,B</li>
-  <li>MOV B,A</li>
-  <li>ADD A,1</li>
-  <li>ADD A,2</li>
-  <li>ADD A,A</li>
-  <li>ADD A,B</li>
+  <li onClick="pushCommand('NOP');">NOP</li>
+  <li onClick="pushCommand('JMP 0000');">JMP XXXX</li>
+  <li onClick="pushCommand('JNC 0000');">JNC XXXX</li>
+  <li onClick="pushCommand('RND B');">RND B</li>
+  <li onClick="pushCommand('MOV A,0');">MOV A,0</li>
+  <li onClick="pushCommand('MOV B,0');">MOV B,0</li>
+  <li onClick="pushCommand('MOV A,B');">MOV A,B</li>
+  <li onClick="pushCommand('MOV B,A');">MOV B,A</li>
+  <li onClick="pushCommand('ADD A,1');">ADD A,1</li>
+  <li onClick="pushCommand('ADD A,2');">ADD A,2</li>
+  <li onClick="pushCommand('ADD A,A');">ADD A,A</li>
+  <li onClick="pushCommand('ADD A,B');">ADD A,B</li>
 </ul>
 </div>
 </div>
@@ -55,7 +54,8 @@
 <textarea id="mccode" rows="17" cols="20" style="font-size:1.5em;">
 </textarea>
 </div><br />
-<a href="#" class="btn-square-so-pop" onClick="Assemble()">アセンブル</a>
+<a class="btn-square-so-pop" onClick="clean()">クリア</a>
+<a class="btn-square-so-pop" onClick="assemble()">アセンブル</a>
 <script>
   var pattern = [
     { reg: /NOP/, out: "0000" },
@@ -75,7 +75,15 @@
     { reg: /NOP/, out: "1110" },
     { reg: /NOP/, out: "1111" },
   ];
-  function Assemble() {
+  function pushCommand(cmd) {
+    document.getElementById("opcode").value += cmd+'\n';
+  }
+  function clean() {
+    document.getElementById("opcode").value = '';
+    document.getElementById("mccode").value = '';
+  }
+  function assemble() {
+    console.log('a');
     var code = document.getElementById("opcode").value;
     var lines = code.split('\n');
     var out = [];
@@ -103,7 +111,7 @@
       }
     }
     out.push('');
-    document.getElementById("mccode").innerHTML = out.join('\n');
+    document.getElementById("mccode").value = out.join('\n');
   }
 </script>
 </body>
