@@ -18,6 +18,9 @@
 #define LED_JFLAG 18
 //入力：クロック
 #define INP_CLK 2
+//BEEP音
+#define BEEP_PIN 20
+#define BEEP_TIM 100
 #else
 #endif
 
@@ -29,8 +32,33 @@ unsigned char AReg = 0;
 unsigned char BReg = 0;
 unsigned char FReg = 0;
 
+int freq[16] = {
+  196,
+  220,
+  247,
+  262,
+
+  294,
+  330,
+  349,
+  392,
+
+  440,
+  494,
+  523,
+  587,
+
+  659,
+  698,
+  784,
+  880,
+};
+volatile int toneFreq = -1;
+
 void execProg() {
+  toneFreq = -1;
   if (digitalRead(INP_CLK)) return;
+  toneFreq = BReg;
   int b0 = digitalRead(INP_BIT0);
   int b1 = digitalRead(INP_BIT1);
   int b2 = digitalRead(INP_BIT2);
@@ -67,7 +95,7 @@ void execProg() {
           }
           break;
         case 3:  //RND B
-          BReg = random(0, 10);
+          BReg = random(0, 16);
           break;
       }
       break;
@@ -148,9 +176,13 @@ void setup() {
   pinMode(LED_AREG, OUTPUT);
   pinMode(LED_BREG, OUTPUT);
 
+  pinMode(BEEP_PIN, OUTPUT);
+
   pinMode(LED_CFLAG, OUTPUT);
   pinMode(LED_JFLAG, OUTPUT);
   digitalWrite(LED_JFLAG, HIGH);
+
+  delay(1000);
 
   pinMode(INP_CLK, INPUT);
   attachInterrupt(digitalPinToInterrupt(INP_CLK), execProg, CHANGE);
@@ -184,4 +216,9 @@ void loop() {
   delay(5);
 
   ledUpdate(FReg, C_FLAG, LED_CFLAG);
+
+  if (toneFreq >= 0) {
+    tone(BEEP_PIN, freq[toneFreq], BEEP_TIM);
+    toneFreq = -1;
+  }
 }
