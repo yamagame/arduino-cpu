@@ -47,7 +47,7 @@
 volatile unsigned char counter = 0;
 volatile unsigned long interruptTime = 0;
 volatile int delayTime = 1000;
-volatile int clockState = LOW; 
+volatile int clockState = 0; 
 
 void ledUpdate(int leds, int no, int gpio) {
   if (leds & no) {
@@ -78,19 +78,22 @@ void setup() {
 }
 
 void loop() {
+  if (clockState == 1) {
+    clockState = 2;
+  }
   ledUpdate(counter, 0x01, LED_BIT0);
   ledUpdate(counter, 0x02, LED_BIT1);
   ledUpdate(counter, 0x04, LED_BIT2);
   ledUpdate(counter, 0x08, LED_BIT3);
   delay(delayTime);
-  if (clockState) {
+  if (clockState > 1) {
     counter ++;
     digitalWrite(EXEC_CLK, LOW);
     delay(delayTime/10);
     digitalWrite(EXEC_CLK, HIGH);
     if (counter >= 16) {
       counter = 15;
-      clockState = LOW;
+      clockState = 0;
     }
   }
 }
@@ -128,7 +131,7 @@ boolean buttonCommon() {
       delayTime = 50;
     }
     interruptTime = time;
-    clockState = HIGH;
+    clockState = 1;
     counter = 0;
     Serial.println(digitalRead(FAST_MODE), DEC);
     return true;
