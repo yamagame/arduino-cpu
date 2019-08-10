@@ -13,19 +13,28 @@
 #define LED_BIT3 9
 //SD:CS
 #define SDCS 10
+//モード
+#define INP_MODE 5
+
+#define FALSE 0
+#define TRUE 1
 
 unsigned char pc = 0;
-unsigned char programdata[16];
 
-void loadProgram() {
-  File fp = SD.open("program.txt");
-  for (int i=0;i<sizeof(programdata);i++) {
-    programdata[i] = 0;
-  }
+#define PROGRAM_SIZE 16
+unsigned char programdata0[PROGRAM_SIZE];
+unsigned char programdata1[PROGRAM_SIZE];
+
+int loadProgram(const char* filename, unsigned char* programdata) {
+  File fp = SD.open(filename);
   int p = 0;
   int t = 0;
   char skip = 0;
   if (fp) {
+//    Serial.println(filename);
+    for (int i=0;i<PROGRAM_SIZE;i++) {
+      programdata[i] = 0;
+    }
     unsigned char b = 0;
     while (fp.available()) {
       char ch = fp.read();
@@ -37,13 +46,13 @@ void loadProgram() {
         skip = 0;
       } else {
         if (skip == 0 && (ch == '\n' || ch == '\r')) {
-          if (p < sizeof(programdata)) {
+          if (p < PROGRAM_SIZE) {
             programdata[p] = b;
           }
           p ++;
           b = 0;
           t = 0;
-          //Serial.println("");
+//          Serial.println("");
         }
         skip = 1;
       }
@@ -53,11 +62,11 @@ void loadProgram() {
         if (ch != '0') {
           b |= 1;
         }
-        //Serial.write(ch);
+//        Serial.write(ch);
       }
     }
     if (t >= 4) {
-      if (p < sizeof(programdata)) {
+      if (p < PROGRAM_SIZE) {
         programdata[p] = b;
       }
       p++;
@@ -65,7 +74,7 @@ void loadProgram() {
     {
       int i;
       int skip=0;
-      for (i = 0;i < p;i++) {
+      for (i = 0;i < PROGRAM_SIZE;i++) {
         switch (programdata[i]) {
           case B0001: //JMP
           case B0010: //JNC
@@ -89,7 +98,9 @@ void loadProgram() {
     fp.close();
   } else {
     //Serial.println("error opening program.txt");
+    return FALSE;
   }
+  return TRUE;
 }
 
 void setup() {
@@ -102,6 +113,8 @@ void setup() {
   pinMode(INP_BIT1, INPUT);
   pinMode(INP_BIT2, INPUT);
   pinMode(INP_BIT3, INPUT);
+
+  pinMode(INP_MODE, INPUT);
 
   pinMode(LED_BIT0, OUTPUT);
   pinMode(LED_BIT1, OUTPUT);
@@ -121,7 +134,11 @@ void setup() {
     digitalWrite(LED_BIT0, LOW);
   }
 
-  loadProgram();
+  loadProgram("program0.txt", programdata0);
+  loadProgram("program0.txt", programdata1);
+  loadProgram("program.txt", programdata0);
+  loadProgram("program.txt", programdata1);
+  loadProgram("program1.txt", programdata1);
 
 //  Serial.println("initialization done.");
 }
@@ -137,9 +154,10 @@ void ledUpdate(int leds, int no, int gpio) {
 void loop() {
   // put your main code here, to run repeatedly:
   pc = ((digitalRead(INP_BIT3)) << 3) | ((digitalRead(INP_BIT2)) << 2) | ((digitalRead(INP_BIT1)) << 1) | (digitalRead(INP_BIT0));
-  unsigned char val = programdata[pc & 0x0F];
+  unsigned char val = (!digitalRead(INP_MODE)) ? programdata0[pc & 0x0F] :  programdata1[pc & 0x0F];
   ledUpdate(val, 0x01, LED_BIT0);
   ledUpdate(val, 0x02, LED_BIT1);
   ledUpdate(val, 0x04, LED_BIT2);
   ledUpdate(val, 0x08, LED_BIT3);
+  delay(10);
 }
