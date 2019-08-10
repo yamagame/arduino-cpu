@@ -23,6 +23,7 @@ void loadProgram() {
     programdata[i] = 0;
   }
   int p = 0;
+  int t = 0;
   char skip = 0;
   if (fp) {
     unsigned char b = 0;
@@ -41,16 +42,48 @@ void loadProgram() {
           }
           p ++;
           b = 0;
+          t = 0;
           //Serial.println("");
         }
         skip = 1;
       }
       if (sk == 0) {
+        t ++;
         b = b << 1;
         if (ch != '0') {
           b |= 1;
         }
         //Serial.write(ch);
+      }
+    }
+    if (t >= 4) {
+      if (p < sizeof(programdata)) {
+        programdata[p] = b;
+      }
+      p++;
+    }
+    {
+      int i;
+      int skip=0;
+      for (i = 0;i < p;i++) {
+        switch (programdata[i]) {
+          case B0001: //JMP
+          case B0010: //JNC
+          case B1110: //LD
+          case B1111: //ST
+            skip = 1;
+            break;
+          case B1100: //HALT
+            if (skip == 0) {
+              i++;
+              programdata[i] = B1111;
+            }
+            skip = 0;
+            break;
+          default:
+            skip = 0;
+            break;
+        }
       }
     }
     fp.close();
