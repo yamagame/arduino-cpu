@@ -41,6 +41,9 @@
   <li onClick="pushCommand('ADD A,2');">ADD A,2</li>
   <li onClick="pushCommand('ADD A,A');">ADD A,A</li>
   <li onClick="pushCommand('ADD A,B');">ADD A,B</li>
+  <li onClick="pushCommand('HALT');">HALT</li>
+  <li onClick="pushCommand('LD 0000');">LD XXXX</li>
+  <li onClick="pushCommand('ST 0000');">ST XXXX</li>
 </ul>
 </div>
 </div>
@@ -70,10 +73,10 @@
     { reg: /ADD\s+A\s*,\s*2/, out: "1001" },
     { reg: /ADD\s+A\s*,\s*A/, out: "1010" },
     { reg: /ADD\s+A\s*,\s*B/, out: "1011" },
-    { reg: /NOP/, out: "1100" },
+    { reg: /HALT/, out: "1100" },
     { reg: /NOP/, out: "1101" },
-    { reg: /NOP/, out: "1110" },
-    { reg: /NOP/, out: "1111" },
+    { reg: /LD\s+([01]+)/, out: "1110" },
+    { reg: /ST\s+([01]+)/, out: "1111" },
   ];
   function pushCommand(cmd) {
     document.getElementById("opcode").value += cmd+'\n';
