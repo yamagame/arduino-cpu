@@ -20,7 +20,7 @@
 #define INP_CLK 2
 //BEEP音
 #define BEEP_PIN 20
-#define BEEP_TIM 100
+#define BEEP_TIM 50
 #else
 #endif
 
@@ -31,6 +31,9 @@
 unsigned char AReg = 0;
 unsigned char BReg = 0;
 unsigned char FReg = 0;
+unsigned char RFlg = 0;
+
+unsigned char ram[16] = { 0 };
 
 int freq[16] = {
   196,
@@ -68,6 +71,19 @@ void execProg() {
 //  Serial.print(code, DEC);
 //  Serial.print(",");
 //  Serial.println(func, DEC);
+  if (RFlg > 0) {
+    unsigned char adr = (b3 << 3) | (b2 << 2) | (b1 << 1) | b0;
+    switch (RFlg) {
+      case 1:
+        AReg = ram[adr];
+        break;
+      default:
+        ram[adr] = AReg;
+        break;
+    }
+    RFlg = 0;
+    return;
+  } else
   if (FReg & S_FLAG) {
     if (FReg & J_FLAG) {
       digitalWrite(LED_JFLAG, LOW);
@@ -155,6 +171,21 @@ void execProg() {
           break;
       }
       break;
+    case 3:   //OTHER
+      switch (func) {
+        case 0:  //HALT
+          FReg |= (S_FLAG | J_FLAG);
+          break;
+        case 1:  //
+          break;
+        case 2:  //LD
+          RFlg = 1;
+          break;
+        case 3:  //ST
+          RFlg = 2;
+          break;
+      }
+      break;
   }
 }
 
@@ -162,6 +193,11 @@ void setup() {
 //  Serial.begin(115200);
 //  while (!Serial) ;
 //  Serial.println("Initializing...");
+
+  int i;
+  for (i = 0;i < sizeof(ram) ; i++) {
+    ram[i] = 0;
+  }
 
   pinMode(INP_BIT0, INPUT);
   pinMode(INP_BIT1, INPUT);
