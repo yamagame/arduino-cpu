@@ -85,7 +85,7 @@ void loop() {
   ledUpdate(counter, 0x02, LED_BIT1);
   ledUpdate(counter, 0x04, LED_BIT2);
   ledUpdate(counter, 0x08, LED_BIT3);
-  delay(delayTime);
+  delay(delayTime/2);
   if (clockState > 1) {
     counter ++;
     digitalWrite(EXEC_CLK, LOW);
@@ -96,6 +96,7 @@ void loop() {
       clockState = 0;
     }
   }
+  delay(delayTime/2);
 }
 
 unsigned char readInput() {
@@ -128,7 +129,7 @@ boolean buttonCommon() {
     if (!digitalRead(FAST_MODE)) {
       delayTime = 1000;
     } else {
-      delayTime = 50;
+      delayTime = 100;
     }
     interruptTime = time;
     clockState = 1;
