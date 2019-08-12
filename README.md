@@ -2,6 +2,8 @@
 
 Arduino pro micro を３つ使った 4ビット CPU もどきです。
 
+![回路イメージ](image/ArduinoCPU-image.png)
+
 ## プログラムの説明
 
 ### プログラムカウンター
