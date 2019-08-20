@@ -56,8 +56,8 @@ LEDの向きを変更してプログラムを作れます。
 | 1011 | ADD A,B | AレジスタにBレジスタの値を加える |
 | 1100<br>1111 | HALT | 終了する<br>※JMP命令と同じ。 |
 | 1101 | ---- | |
-| 1110 | LD A,XXXX | Aレジスタに RAM[XXXX] の値を入れる |
-| 1111 | ST A,XXXX | Aジレスタの値を RAM[XXXX] に入れる |
+| 1110<br>XXXX | LD A,XXXX | Aレジスタに RAM[XXXX] の値を入れる |
+| 1111<br>XXXX | ST A,XXXX | Aジレスタの値を RAM[XXXX] に入れる |
 
 ## サンプルコード
 
